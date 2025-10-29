@@ -8,6 +8,6 @@ package com.gregory.server.mycompany;
  *
  * @author gregeek
  */
-public class CustomException {
-    
+public class InvalidCommandException {
+    //changed naming to match the breif requirements
 }

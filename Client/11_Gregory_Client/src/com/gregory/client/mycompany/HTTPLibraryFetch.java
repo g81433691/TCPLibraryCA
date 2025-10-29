@@ -9,5 +9,5 @@ package com.gregory.client.mycompany;
  * @author gregeek
  */
 public class HTTPLibraryFetch {
-    
+    //gonna access a publicly accesible <public-URL> using URL\URLconnection class to access a github page linking to /./././loans.txt when the user runs the application!.
 }

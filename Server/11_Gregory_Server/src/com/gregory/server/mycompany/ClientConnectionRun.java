@@ -4,55 +4,42 @@
  */
 package com.gregory.server.mycompany;
 
-import java.time.LocalDate;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 /**
  *
  * @author gregeek
  */
-public class ClientConnectionRun implements Runnable {
-    
-    public String BookName,BorrowerName;
-    public LocalDate borrwedDate;
+public class ClientConnectionRun implements Runnable {//
 
-    public ClientConnectionRun(String BookName, String BorrowerName, LocalDate borrwedDate) {
-        this.BookName = BookName;
-        this.BorrowerName = BorrowerName;
-        this.borrwedDate = borrwedDate;
+    Socket client_link = null;
+    String client_id;
+
+    public ClientConnectionRun(Socket Conn, String client_id) {
+        this.client_link = Conn;
+        this.client_id = client_id;
     }
 
-    public String getBookName() {
-        return BookName;
-    }
-
-    public void setBookName(String BookName) {
-        this.BookName = BookName;
-    }
-
-    public String getBorrowerName() {
-        return BorrowerName;
-    }
-
-    public void setBorrowerName(String BorrowerName) {
-        this.BorrowerName = BorrowerName;
-    }
-
-    public LocalDate getBorrwedDate() {
-        return borrwedDate;
-    }
-
-    public void setBorrwedDate(LocalDate borrwedDate) {
-        this.borrwedDate = borrwedDate;
-    }
-
-    @Override
-    public String toString() {
-        return "ClientConnectionRun{" + "BookName=" + BookName + ", BorrowerName=" + BorrowerName + ", borrwedDate=" + borrwedDate + '}';
-    }
-    
-    
+   
     @Override
     public void run() {
-
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(client_link.getInputStream()));
+            PrintWriter out = new PrintWriter(client_link.getOutputStream(), true);
+                        
+            String command = in.readLine();
+            System.out.println("Command Received from client: " +client_id +" Message: " +command);
+            
+            //Need to add in ACTIONS, which will consist of STOP, BORROW, RETURM and LIST,  will be case insensitive and shave off spaces using trim(), need to demonstrate understadning of synchronization
+            //local storage like an Arraylist for Borrowed
+            //will break the users command into 4 parts so "Borrrow' Greg' 12th june 2025; clean code  " into 4 parts, it should be case insensitive and trim() spaces off the edges , so like action[],name[].date[],titlte[]<
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }

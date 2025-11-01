@@ -19,7 +19,6 @@ public class TCPClient {
     public static void main(String[] args) {
 
         //HTTP GET integreated import on compilation, to access loans.txt at a publicly accesible url using URL or URLConnection
-        
         try {
             host = InetAddress.getLocalHost();
 
@@ -33,27 +32,33 @@ public class TCPClient {
     private static void run() {
         Socket link = null;
         try {
-            link = new Socket(host, Port);		//Step 1.
-            
-            //link1 = new Socket( "0.0.0.0", Port);//need to check breif to see whhich way it needs to be done!
-            
-            BufferedReader in = new BufferedReader(new InputStreamReader(link.getInputStream()));//Step 2.
+            link = new Socket(host, Port);
+            BufferedReader in = new BufferedReader(new InputStreamReader(link.getInputStream()));
             PrintWriter out = new PrintWriter(link.getOutputStream(), true);	 //Step 2.
 
-           
             BufferedReader userEntry = new BufferedReader(new InputStreamReader(System.in));
             String command = null;
-            String reply = null;
 
-            System.out.println("Please enter command for the server: ");
-            command = userEntry.readLine();
-            out.println(command);
-            reply = in.readLine();
-            System.out.println("\server reply: " + reply);
-            
+            boolean running = true;
+            while (running) {
+
+                System.out.println("\nPlease enter command for the server: ");
+                command = userEntry.readLine();
+                out.println(command);
+                String reply = in.readLine();
+
+                System.out.println("\nServer reply: " + reply);
+                if (reply.equalsIgnoreCase("TERMINATING")) {
+                    System.out.println("Terminating session as requested by server.");
+                    running = false;
+                    System.exit(0);
+                    break;
+                }
+
+            }
         } catch (IOException ex) {
             ex.printStackTrace();
-        } 
+        }
 
     }
 }

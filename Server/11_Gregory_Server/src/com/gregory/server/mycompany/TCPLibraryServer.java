@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -16,10 +17,9 @@ import java.util.ArrayList;
 public class TCPLibraryServer {
 
     private static ServerSocket serverSocket;
-    private static final int Port = 1440;
+    private static final int Port = 2050;
     private static int client_Connection_Id = 0;
-    public static final ArrayList<Description> Desc = new ArrayList<>();
-
+    private static HashMap<String, ArrayList<BookDescription>> loansRecord = new HashMap<>();
     public static void main(String[] args) {
         System.out.println("Attempting to open Port!\n");
         try {
@@ -39,8 +39,8 @@ public class TCPLibraryServer {
             while (true) {
                 link = serverSocket.accept();
                 client_Connection_Id++;
-                String clientID = "Client " + client_Connection_Id;
-                Runnable bookRecord = new ClientConnectionRun(link, clientID, Desc);
+                String IDClient = "Client " + client_Connection_Id;
+                Runnable bookRecord = new ClientConnectionRun(link, IDClient, loansRecord);
                 Thread thread = new Thread(bookRecord);
                 thread.start();
             }

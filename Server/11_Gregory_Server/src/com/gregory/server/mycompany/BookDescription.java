@@ -8,13 +8,13 @@ package com.gregory.server.mycompany;
  *
  * @author gregeek
  */
-public class Description {
+public class BookDescription {
 
     private String Username;
     private String Date;
     private String BookTitle;
 
-    public Description(String Username, String Date, String BookTitle) {
+    public BookDescription(String Username, String Date, String BookTitle) {
         this.Username = Username;
         this.Date = Date;
         this.BookTitle = BookTitle;
@@ -44,9 +44,5 @@ public class Description {
         this.BookTitle = BookTitle;
     }
 
-    @Override
-    public String toString() {
-        return "Description{" + "Username=" + Username + ", Date=" + Date + ", BookTitle=" + BookTitle + '}';
-    }
 
 }

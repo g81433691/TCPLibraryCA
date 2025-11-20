@@ -13,12 +13,12 @@ import java.net.*;
  */
 public class TCPClient {
 
-    private static final int Port = 1440;
-    private static InetAddress host;
+    private static final int Port = 2050;//
+    private static InetAddress host;//abc
 
     public static void main(String[] args) {
 
-        //HTTP GET integreated import on compilation, to access loans.txt at a publicly accesible url using URL or URLConnection
+        //HTTP GET integreated import on command, to access loans.txt at a publicly accesible url using URL or URLConnection
         try {
             host = InetAddress.getLocalHost();
 

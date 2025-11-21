@@ -5,10 +5,10 @@ import java.net.*;
 
 /**
  *
- * @author gregeek
+ * @author gregorym
  */
 public class TCPClient {
-    //
+    
     private static final int Port = 2050;//variable to just store the same port value
     private static InetAddress localHost;//local host
 
@@ -26,11 +26,11 @@ public class TCPClient {
     private static void run() {
         Socket link = null;
         try {
-            link = new Socket(localHost, Port);//first step: make the socket for the client and pass in the port and host
+            link = new Socket(localHost, Port);//make the socket for the client and pass in the port and host
             BufferedReader in = new BufferedReader(new InputStreamReader(link.getInputStream()));//wrapping the sockets inp stream in a buffered reader, to read the incoming response for the server
-            PrintWriter out = new PrintWriter(link.getOutputStream(), true);//wrapping the sokcets outp stream in a printWriter, the true is auto enabling .flush() as to stop congestion
+            PrintWriter out = new PrintWriter(link.getOutputStream(), true);//wrapping the sokcets outp stream in a printWriter, the true is auto enabling .flush() 
 
-            BufferedReader userEntry = new BufferedReader(new InputStreamReader(System.in));//second step: reading from keybaord and wrapping in a input str reader and br, allowing  us to read line of user input from the console
+            BufferedReader userEntry = new BufferedReader(new InputStreamReader(System.in));//reading from keybaord and wrapping in a input str reader and br, allowing  us to read line of user input from the console
             String command = null;//init variable to hold command to pass to server
 
             boolean running = true;//just a boolean for the state of the connection
@@ -50,7 +50,7 @@ public class TCPClient {
 
                 }
                 
-                //Third step: send the message and read the line sent back from the server
+                // send the message and read the line sent back from the server
                 
                 out.println(command);
                 String reply = in.readLine();
@@ -58,7 +58,7 @@ public class TCPClient {
                 System.out.println("\nServers message: " + reply);//print it back out to the client/enduser to see
                 //so the breif was quite clear on the desired flow of the client termination logic
                 //STOP -> server replies : TERMINATION - > client: if the server replies terminating then system.exit, -> server side displays "Client9 has been termianted"
-                if (reply.equalsIgnoreCase("TERMINATING")) {//Fourth step: if server replies terminating, terminate
+                if (reply.equalsIgnoreCase("TERMINATING")) {//if server replies terminating, terminate
                     System.out.println("Terminating session as requested by server.");//notify end user
                     running = false;//update
                     System.exit(0);//quit 

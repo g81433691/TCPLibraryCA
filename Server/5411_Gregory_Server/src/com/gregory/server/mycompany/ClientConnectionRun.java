@@ -11,20 +11,20 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author gregeek
+ * @author gregorym
  */
 public class ClientConnectionRun implements Runnable {
     
-    //class implements runnable so the runnable object can be ran in a thread so every client will be on its own thread,
+    //class implements runnable so the runnable object can be wrapped in a thread so every client will be on its own thread,
  
-
     Socket clientConn = null;
     String id_client;
     private static HashMap<String, ArrayList<BookDescription>> loansRecord;  
     
     //so this is my first time ever using a map, so changed from arraylist to HashMap 
-    //while mapping a String to a description obj, will represent the all books currently being borrowed by the user
-    //ref
+    //while mapping a String to a book description obj, will represent the all books currently being borrowed by the user
+    //ref: see design report for reference to (Shane Crouch - The Coding Zoo, 2020):  tutorial on thr use of maps
+
     
     public ClientConnectionRun(Socket Conn, String id_client, HashMap<String, ArrayList<BookDescription>> loansRecord) {
         this.clientConn = Conn;
@@ -61,10 +61,11 @@ public class ClientConnectionRun implements Runnable {
                     try {
                         InvalidCommand(BookDescription, serverAction);//a method to validate the end users command and throw a accurate custom exception as per their scenario
                     } catch (InvalidCommandException e) {
-                        out.println("Unfortuneatly we have encountered an error validating your command to the server: " + e.getMessage());//notify end user
+                        out.println("Error: " + e.getMessage());//notify end user
                         continue;//carry on, this line took me a while to figure out
                     }
-
+                    //originally attempted to pass in the variables themselves into the validation method
+                    //But the use of .split() was throwing a exc ArrayList.OutOfBounds, so i moved it up and just pass in the description array and action, its a lot easier this way
                     //assign the first part of the split command to username
                     String Username = BookDescription[1].trim();
                     //assign the second part of the split command to the date of the borrow record
@@ -81,10 +82,10 @@ public class ClientConnectionRun implements Runnable {
                                     }
 
                                     ArrayList<BookDescription> loanedBooks = loansRecord.get(Username);
-                                    loanedBooks.add(new BookDescription(Username, Date, BookTitle));
+                                    loanedBooks.add(new BookDescription(Username, Date, BookTitle));//add to list
                                 }
 
-                                listUserLoans(Username, out);//call upon the method to list what books the user currently has on laon
+                                listUserLoans(Username, out);//call upon the method to list what books the user currently has on loan
                                 break;
 
                             case "LIST":
@@ -126,7 +127,7 @@ public class ClientConnectionRun implements Runnable {
         public static void listUserLoans(String Username, PrintWriter out) {//broke it into a method to be reused
             ArrayList<BookDescription> allBooks;
             synchronized (loansRecord) {
-                allBooks = loansRecord.get(Username);
+                allBooks = loansRecord.get(Username);//get the books of the key
             }
 
             if (allBooks == null || allBooks.isEmpty()) {//make sure the end user currently has books on loan
@@ -135,7 +136,7 @@ public class ClientConnectionRun implements Runnable {
                 
                 String loansList;//a placeholder for the list of books
                 synchronized (allBooks) {//syncrhonized block to hold the methods monitor
-                    loansList = allBooks.stream().map(book -> "Book: " + book.getBookTitle() + " - Date: " + book.getDate()).collect(Collectors.joining(" | "));//make the list a stream, and convert every bookname into a singular
+                    loansList = allBooks.stream().map(book -> "Book: " + book.getBookTitle() + " - Date: " + book.getDate()).collect(Collectors.joining(" | "));//make the list a stream, and convert every bookname into a singular String using Joining; REF; to howtodoinjava article in design report
                 }
                 out.println(Username + " currently has: " + loansList); //notify the end user of the loans list (books currently on loan)
             }
@@ -152,14 +153,14 @@ public class ClientConnectionRun implements Runnable {
             }
 
             if (BookDescription.length < 4) {//make sure theyve enetered the amount of fields anticipated by the server
-                throw new InvalidCommandException("Please ensure your using the correct number of fields. For actions like 'LIST' or 'RETURN' please just use the '--' placeholder. Examples: LIST;Greg;--;-- or RETURN;Greg;--Bitcoin tips");
+                throw new InvalidCommandException("Please enter 4 fields. Please just use the '--' placeholder. Examples: LIST;Greg;--;-- or RETURN;Greg;--;Bitcoin tips");
             }
             
             if (BookDescription.length > 4) {//make sure they havent entered over the amount of expected fields
                 throw new InvalidCommandException("The maximum number of fields is 4 and the epected format is Borrow;Name;Date;BookTitle");
             }
 
-            if (!serverAction.equals("BORROW") && !serverAction.equals("LIST") && !serverAction.equals("RETURN") && !serverAction.equals("STOP") && !serverAction.equals("IMPORT")) {//if the Action or the first field of the command isnt recognized , notify the eend user
+            if (!serverAction.equals("BORROW") && !serverAction.equals("LIST") && !serverAction.equals("RETURN") && !serverAction.equals("STOP") && !serverAction.equals("IMPORT")) {//if the Action or the first field of the command isnt recognized
                 throw new InvalidCommandException("The acttion of your command is unkown: " + serverAction);//notify the end user and throw a accurate exception n message
             }
 
@@ -167,14 +168,17 @@ public class ClientConnectionRun implements Runnable {
                 if (BookDescription[1].trim().isEmpty()) {//and the first section is empty
                     throw new InvalidCommandException("Please ensure youve entered a username");//throw custom exception
                 }
+                
+                if (BookDescription[1].length() >= 28 ) {//make sure the name isnt longer than 28 characters
+                    throw new InvalidCommandException("Please ensure the username you entered is below 28 characters ");//throw custom exception
+                }
                 if (BookDescription[2].trim().isEmpty()) {//if the second section is empty
                     throw new InvalidCommandException("Please ensure youve entered a valid date");//throw new message n excepttion
                 }
                 if (BookDescription[3].trim().isEmpty()) {//and check the third
                     throw new InvalidCommandException("Please ensure youve entered a Book title");//throw exception
+                 }
                 
-            }
-
         }
     }
 }

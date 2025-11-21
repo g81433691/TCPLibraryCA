@@ -2,7 +2,7 @@ package com.gregory.server.mycompany;
 
 /**
  *
- * @author gregeek
+ * @author gregorym
  */
 public class BookDescription {
 

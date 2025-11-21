@@ -9,19 +9,22 @@ import java.net.URL;
 
 /**
  *
- * @author gregeek
+ * @author gregorym
  */
 public class HTTPLibraryFetch {
     
     public void start(String loanURL, PrintWriter serverOut, BufferedReader serverIn) throws IOException {
 
+        //URL declartion seems to be depreciated maybe make it a URI then convert to URL, but it seems to be working fine
+        //so perhaps change it in the future
+        
         URL url = new URL(loanURL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         
         //https://pastebin.com/raw/t3k7nAeZ heres the URL
         
         conn.setRequestMethod("GET");//setting it to GET request
-        conn.setConnectTimeout(2000);//5000 felt like something was going wrong so i shortened it to 2
+        conn.setConnectTimeout(2000);//fix: this fixed my issue of importinh;EDIT: 5000 felt like something was going wrong so i shortened it to 2
         conn.setReadTimeout(2000);
 
         if (conn.getResponseCode() != 200) {

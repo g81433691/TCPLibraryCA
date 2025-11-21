@@ -24,7 +24,6 @@ public class ClientConnectionRun implements Runnable {
     
     //so this is my first time ever using a map, so changed from arraylist to HashMap 
     //while mapping a String to a description obj, will represent the all books currently being borrowed by the user
-    //
     //ref
     
     public ClientConnectionRun(Socket Conn, String id_client, HashMap<String, ArrayList<BookDescription>> loansRecord) {
@@ -39,8 +38,10 @@ public class ClientConnectionRun implements Runnable {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientConn.getInputStream()));//declaring streams for client
             PrintWriter out = new PrintWriter(clientConn.getOutputStream(), true);
 
-            String command;//holder variable for the end users command
-            while ((command = in.readLine()) != null) {  //one line per message, so one loop
+            String command;//holder variable for the end users command to the serv
+            
+            while ((command = in.readLine()) != null) {  
+                
                 System.out.println("Command Received from client: " + id_client + " Message: " + command);//notify the end user
 
                 String[] BookDescription = command.split(";");//use the .split() method to split the command into 4 parts.
@@ -60,13 +61,16 @@ public class ClientConnectionRun implements Runnable {
                     try {
                         InvalidCommand(BookDescription, serverAction);//a method to validate the end users command and throw a accurate custom exception as per their scenario
                     } catch (InvalidCommandException e) {
-                        out.println("Error: " + e.getMessage());//notify end user
+                        out.println("Unfortuneatly we have encountered an error validating your command to the server: " + e.getMessage());//notify end user
                         continue;//carry on, this line took me a while to figure out
                     }
 
-                    String Username = BookDescription[1].trim();//assign the first part of the split command to username
-                    String Date = BookDescription[2].trim();//assign the second part of the split command to the date of the borrow record
-                    String BookTitle = BookDescription[3].trim();//assign the third to be assigned to the books title, this is as per the breif
+                    //assign the first part of the split command to username
+                    String Username = BookDescription[1].trim();
+                    //assign the second part of the split command to the date of the borrow record
+                    String Date = BookDescription[2].trim();
+                    //assign the third to be assigned to the books title, this is as per the breif
+                    String BookTitle = BookDescription[3].trim();
 
                         switch (serverAction) {//a simple switch case to determnine our next move based on the first section of the split command , so itll get the commands desired "serverAction"
                             case "BORROW":
@@ -88,6 +92,7 @@ public class ClientConnectionRun implements Runnable {
                                 break;
                             case "RETURN":
                                 ArrayList<BookDescription> loanedBooks = loansRecord.get(Username);//access the user loansRecord by the identifier/key
+                                synchronized(loansRecord){
 
                                 if (loanedBooks == null || loanedBooks.isEmpty()) {//check if empty
                                     out.println("This user has no book currently to return.");
@@ -107,6 +112,7 @@ public class ClientConnectionRun implements Runnable {
                                             break;
                                         }
                                     }
+                                }
                                     listUserLoans(Username, out);//print the updated list of books currently on loan from the user
                                 }
                                 break;
@@ -127,43 +133,48 @@ public class ClientConnectionRun implements Runnable {
                 out.println(Username + " currently has no books on loan.");
             } else {//if they do 
                 
-                String bookList;//a placeholder for the list of books
+                String loansList;//a placeholder for the list of books
                 synchronized (allBooks) {//syncrhonized block to hold the methods monitor
-                    bookList = allBooks.stream().map(book -> "Book: " + book.getBookTitle() + " - Date: " + book.getDate()).collect(Collectors.joining(" | "));//make the list a stream, and convert every bookname into a string (->), and use collect to concatanate them but i added in the spaces
+                    loansList = allBooks.stream().map(book -> "Book: " + book.getBookTitle() + " - Date: " + book.getDate()).collect(Collectors.joining(" | "));//make the list a stream, and convert every bookname into a singular
                 }
-                out.println(Username + " currently has: " + bookList); //notify the ned user of the book list (books currently on loan)
+                out.println(Username + " currently has: " + loansList); //notify the end user of the loans list (books currently on loan)
             }
         }
 
         public static void InvalidCommand(String[] BookDescription, String serverAction) throws InvalidCommandException {// a method to further break down the issue for the end user and point it out
+            //i think ive covered most cases of malformed input or invalid commands
+            //if i have time ill error check the input characters to no numbers in the name
+            //the correct formatting of the date so "05 september 2023 or DD MMMM YYYY" 
+            //and length limits so you cant overload the scanner
+            
             if (BookDescription == null || BookDescription.length == 0 || serverAction == null || serverAction.trim().isEmpty()) {//make sure the user has input a command
-                throw new InvalidCommandException("Command cannot be empty");//throws custom exception
+                throw new InvalidCommandException("Please ensure you entered a valid command. A empty command is invalid");//throws custom exception
             }
 
             if (BookDescription.length < 4) {//make sure theyve enetered the amount of fields anticipated by the server
-                throw new InvalidCommandException("Command requires 4 fields, use '--' for missing fields");
+                throw new InvalidCommandException("Please ensure your using the correct number of fields. For actions like 'LIST' or 'RETURN' please just use the '--' placeholder. Examples: LIST;Greg;--;-- or RETURN;Greg;--Bitcoin tips");
             }
             
             if (BookDescription.length > 4) {//make sure they havent entered over the amount of expected fields
-                throw new InvalidCommandException("Too many fields, only 4 expected: command,Username,date,bookTitle");
+                throw new InvalidCommandException("The maximum number of fields is 4 and the epected format is Borrow;Name;Date;BookTitle");
             }
 
             if (!serverAction.equals("BORROW") && !serverAction.equals("LIST") && !serverAction.equals("RETURN") && !serverAction.equals("STOP") && !serverAction.equals("IMPORT")) {//if the Action or the first field of the command isnt recognized , notify the eend user
-                throw new InvalidCommandException("Unknown command: " + serverAction);//notify the end user and throw a accurate exception n message
+                throw new InvalidCommandException("The acttion of your command is unkown: " + serverAction);//notify the end user and throw a accurate exception n message
             }
 
             if (serverAction.equals("BORROW") || serverAction.equals("RETURN")) {//if the action is one of these
                 if (BookDescription[1].trim().isEmpty()) {//and the first section is empty
-                    throw new InvalidCommandException("Username cannot be empty");//throw custom exception
+                    throw new InvalidCommandException("Please ensure youve entered a username");//throw custom exception
                 }
                 if (BookDescription[2].trim().isEmpty()) {//if the second section is empty
-                    throw new InvalidCommandException("Take date cannot be empty");//throw new message n excepttion
+                    throw new InvalidCommandException("Please ensure youve entered a valid date");//throw new message n excepttion
                 }
                 if (BookDescription[3].trim().isEmpty()) {//and check the third
-                    throw new InvalidCommandException("Book name cannot be empty");//throw exception
-                }
+                    throw new InvalidCommandException("Please ensure youve entered a Book title");//throw exception
+                
             }
 
         }
-
+    }
 }

@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gregory.server.mycompany;
 
 import java.io.BufferedReader;
@@ -17,7 +13,6 @@ import java.util.stream.Collectors;
  *
  * @author gregeek
  */
-
 public class ClientConnectionRun implements Runnable {
     
     //class implements runnable so the runnable object can be ran in a thread so every client will be on its own thread,
@@ -25,8 +20,13 @@ public class ClientConnectionRun implements Runnable {
 
     Socket clientConn = null;
     String id_client;
-    private static HashMap<String, ArrayList<BookDescription>> loansRecord;  // changed from arraylist to HashMap , while mapping a String to a description obj, will represent the all loansRecord currently being borrowed by the user
-
+    private static HashMap<String, ArrayList<BookDescription>> loansRecord;  
+    
+    //so this is my first time ever using a map, so changed from arraylist to HashMap 
+    //while mapping a String to a description obj, will represent the all books currently being borrowed by the user
+    //
+    //ref
+    
     public ClientConnectionRun(Socket Conn, String id_client, HashMap<String, ArrayList<BookDescription>> loansRecord) {
         this.clientConn = Conn;
         this.id_client = id_client;
@@ -66,7 +66,7 @@ public class ClientConnectionRun implements Runnable {
 
                     String Username = BookDescription[1].trim();//assign the first part of the split command to username
                     String Date = BookDescription[2].trim();//assign the second part of the split command to the date of the borrow record
-                    String BookTitle = BookDescription[3].trim();//assign the third to be assigned to the loansRecord title, this is as per the breif
+                    String BookTitle = BookDescription[3].trim();//assign the third to be assigned to the books title, this is as per the breif
 
                         switch (serverAction) {//a simple switch case to determnine our next move based on the first section of the split command , so itll get the commands desired "serverAction"
                             case "BORROW":
@@ -80,7 +80,7 @@ public class ClientConnectionRun implements Runnable {
                                     loanedBooks.add(new BookDescription(Username, Date, BookTitle));
                                 }
 
-                                listUserLoans(Username, out);//call upon the method to list what loansRecord the user currently has on laon
+                                listUserLoans(Username, out);//call upon the method to list what books the user currently has on laon
                                 break;
 
                             case "LIST":
@@ -95,19 +95,19 @@ public class ClientConnectionRun implements Runnable {
                                     
                                     boolean wasBookReturned = false;//boolean for the state of the return
                                     
-                                    for (int i = 0; i < loanedBooks.size(); i++) {//a simple loop over the users loansRecord they currently have on loan
+                                    for (int i = 0; i < loanedBooks.size(); i++) {//a simple loop over the users books they currently have on loan
                                         
                                         if (loanedBooks.get(i).getBookTitle().equalsIgnoreCase(BookTitle)) {//when the index matches the name of the booktitle to be wasBookReturned
                                             loanedBooks.remove(i);//remove it at index
-                                            wasBookReturned = true;//set the state of wasBookReturned to true
+                                            wasBookReturned = true;//set the state of " was the book returned yet" to true
                                             
-                                            if (loanedBooks.isEmpty()) {//and additionally if they have no loansRecord anymore
+                                            if (loanedBooks.isEmpty()) {//and additionally if they have no books anymore
                                                 loansRecord.remove(Username);//remove them from the system
                                             }
                                             break;
                                         }
                                     }
-                                    listUserLoans(Username, out);//print the updated list of loansRecord currently on loan from the user
+                                    listUserLoans(Username, out);//print the updated list of books currently on loan from the user
                                 }
                                 break;
                            }
@@ -123,15 +123,15 @@ public class ClientConnectionRun implements Runnable {
                 allBooks = loansRecord.get(Username);
             }
 
-            if (allBooks == null || allBooks.isEmpty()) {//make sure the end user currently has loansRecord on loan
-                out.println(Username + " currently has no loansRecord on loan.");
+            if (allBooks == null || allBooks.isEmpty()) {//make sure the end user currently has books on loan
+                out.println(Username + " currently has no books on loan.");
             } else {//if they do 
                 
-                String bookList;//a placeholder for the list of loansRecord
+                String bookList;//a placeholder for the list of books
                 synchronized (allBooks) {//syncrhonized block to hold the methods monitor
                     bookList = allBooks.stream().map(book -> "Book: " + book.getBookTitle() + " - Date: " + book.getDate()).collect(Collectors.joining(" | "));//make the list a stream, and convert every bookname into a string (->), and use collect to concatanate them but i added in the spaces
                 }
-                out.println(Username + " currently has: " + bookList); //notify the ned user of the book list (loansRecord currently on loan)
+                out.println(Username + " currently has: " + bookList); //notify the ned user of the book list (books currently on loan)
             }
         }
 
@@ -148,7 +148,7 @@ public class ClientConnectionRun implements Runnable {
                 throw new InvalidCommandException("Too many fields, only 4 expected: command,Username,date,bookTitle");
             }
 
-            if (!serverAction.equals("BORROW") && !serverAction.equals("LIST") && !serverAction.equals("RETURN") && !serverAction.equals("STOP") && !serverAction.equals("IMPORT")) {//if the serverAction or the first field of the command isnt recognized , notify the eend user
+            if (!serverAction.equals("BORROW") && !serverAction.equals("LIST") && !serverAction.equals("RETURN") && !serverAction.equals("STOP") && !serverAction.equals("IMPORT")) {//if the Action or the first field of the command isnt recognized , notify the eend user
                 throw new InvalidCommandException("Unknown command: " + serverAction);//notify the end user and throw a accurate exception n message
             }
 

@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package com.gregory.client.mycompany;
 
 import java.io.*;
@@ -18,10 +14,8 @@ public class TCPClient {
 
     public static void main(String[] args) {
 
-        //HTTP GET integreated import on command, to access loans.txt at a publicly accesible url using URL or URLConnection
         try {
             host = InetAddress.getLocalHost();
-
         } catch (UnknownHostException ex) {
             System.out.println("Host not found!");
             System.exit(1);
@@ -44,6 +38,15 @@ public class TCPClient {
 
                 System.out.println("\nPlease enter command for the server: ");
                 command = userEntry.readLine();
+                
+                if(command.startsWith("import")){
+                    String loansURL = command.substring(7).trim();//skips
+                    HTTPLibraryFetch f = new HTTPLibraryFetch();
+                    f.HttpGet(loansURL, out, in);
+                    continue;
+
+                }
+                
                 out.println(command);
                 String reply = in.readLine();
 
